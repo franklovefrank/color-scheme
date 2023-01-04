@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
-import iColorResponse from "./interfaces/iColorResponse";
 
-export default async function colorScheme(input: string, callback: Function) : Promise<void> {
+export default async function colorScheme(input: string, callback: Function) {
     return fetch('http://www.colorfyit.com/api/swatches/list.json?url=' + input, {method: 'GET'})
     .then(response => {
         console.log(response)
@@ -11,8 +10,7 @@ export default async function colorScheme(input: string, callback: Function) : P
         return response.json()
     })
     .then(data => {
-        let dataAny: any = data 
-        const colors: iColorResponse[] = dataAny.colors.map(raw => raw.Hex)
+        const colors: string[] = data.colors.map(raw => raw.Hex)
         callback(colors)
     })
 }

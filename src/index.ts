@@ -1,22 +1,40 @@
-import express, { Request, Response } from 'express';
+import express, { Express, Request, Response } from 'express';
 import * as dotenv from 'dotenv';
-import { WebClient } from '@slack/web-api';
+import bodyParser from 'body-parser';
 import colorScheme from './colorScheme'
 import iColorResponse from './interfaces/iColorResponse';
 import iSlackResponse from './interfaces/iSlackResponse';
+import { WebClient } from '@slack/web-api';
 
-const client = new WebClient();
-const app = express();
 dotenv.config();
+const app: Express = express();
+const client = new WebClient();
 
-app.get('/', (_, res: Response) => {
-    res.send('Yeehaw! Express and node are up and running');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.listen(3000, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });
+
+app.get('/', (req, res) => {
+    res.send('Successfully setup and running Node and Express.');
 });
 
-app.get('/slack/auth', async (_, res: Response) => {
-    const redirect = 'https://87b0-69-123-91-54.ngrok.io/auth/slack/callback';
+app.post('/', (req: Request, res: Response) => {
+    colorScheme(req.body.text, function (colors: iColorResponse[]) {
+        var data: iSlackResponse = {
+            response_type: 'in_channel', // public to the channel 
+            text: colors.join(',')
+        };
+        res.json(data);
+    })
+});
+
+app.get('/slack/auth', async (_, res) => {
+    console.log(process.env.SLACK_CLIENT_ID)
     const scopes = 'identity.basic,identity.email';
-    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&user_scope=${scopes}&redirect_uri=${redirect}`;
+    const redirect_url = 'https://87b0-69-123-91-54.ngrok.io/auth/slack/callback';
+    //Here you build the url. You could also copy and paste it from the Manage Distribution page of your app.
+    const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&user_scope=${scopes}&redirect_uri=${redirect_url}`;
+
     res.status(200)
         .header('Content-Type', 'text/html; charset=utf-8')
         .send(`
@@ -26,7 +44,8 @@ app.get('/slack/auth', async (_, res: Response) => {
         `);
 });
 
-app.get('/slack/auth/callback', async (req: Request, res: Response) => {
+app.get('/slack/auth/callback', async (req, res) => {
+
     try {
         const response = await client.oauth.v2.access({
             client_id: process.env.SLACK_CLIENT_ID,
@@ -37,21 +56,11 @@ app.get('/slack/auth/callback', async (req: Request, res: Response) => {
         const identity = await client.users.identity({
             token: response.authed_user.access_token
         });
-        res.status(200).send(`<html><body><p>Success! You are logged in with your slack account. Here are some details:</p><p>Response: ${JSON.stringify(response)}</p><p>Identity: ${JSON.stringify(identity)}</p></body></html>`);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(`<html><body><p>Sorry! Something went wrong</p><p>${JSON.stringify(err)}</p>`);
+
+        // At this point you can assume the user has logged in successfully with their account.
+        res.status(200).send(`<html><body><p>You have successfully logged in with your slack account! Here are the details:</p><p>Response: ${JSON.stringify(response)}</p><p>Identity: ${JSON.stringify(identity)}</p></body></html>`);
+    } catch (eek) {
+        console.log(eek);
+        res.status(500).send(`<html><body><p>Something went wrong!</p><p>${JSON.stringify(eek)}</p>`);
     }
 });
-
-app.post('/', (req: Request, res: Response) => {
-    colorScheme(req.body.text, function (colors: iColorResponse[]) {
-        var data: iSlackResponse = {
-            response_type: 'in_channel',
-            text: colors.join(',')
-        };
-        res.json(data);
-    })
-});
-
-app.listen(3000, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });

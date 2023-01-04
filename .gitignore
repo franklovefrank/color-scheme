@@ -3,3 +3,4 @@ package-lock.json
 out
 localhost.pem
 localhost-key.pem
+.env

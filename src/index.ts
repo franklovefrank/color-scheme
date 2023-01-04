@@ -12,7 +12,7 @@ const client = new WebClient();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.listen(3000, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });
+app.listen(process.env.PORT, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });
 
 app.get('/', (req, res) => {
     res.send('Successfully setup and running Node and Express.');
@@ -31,7 +31,7 @@ app.post('/', (req: Request, res: Response) => {
 app.get('/slack/auth', async (_, res) => {
     console.log(process.env.SLACK_CLIENT_ID)
     const scopes = 'identity.basic,identity.email';
-    const redirect_url = 'https://87b0-69-123-91-54.ngrok.io/auth/slack/callback';
+    const redirect_url = 'https://anna-claire-color-schemer.herokuapp.com/auth/slack/callback';
     //Here you build the url. You could also copy and paste it from the Manage Distribution page of your app.
     const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&user_scope=${scopes}&redirect_uri=${redirect_url}`;
 

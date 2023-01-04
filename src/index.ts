@@ -1,19 +1,19 @@
 import express, { Request, Response } from 'express';
 import * as dotenv from 'dotenv';
 import { WebClient } from '@slack/web-api';
+import colorScheme from './colorScheme'
+import iColorResponse from './interfaces/iColorResponse';
+import iSlackResponse from './interfaces/iSlackResponse';
 
+const client = new WebClient();
+const app = express();
 dotenv.config();
 
-const app = express();
-const client = new WebClient();
-
-app.listen(3000, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });
-
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_, res: Response) => {
     res.send('Yeehaw! Express and node are up and running');
 });
 
-app.get('/auth/slack', async (req: Request, res: Response) => {
+app.get('/slack/auth', async (_, res: Response) => {
     const redirect = 'https://87b0-69-123-91-54.ngrok.io/auth/slack/callback';
     const scopes = 'identity.basic,identity.email';
     const url = `https://slack.com/oauth/v2/authorize?client_id=${process.env.SLACK_CLIENT_ID}&user_scope=${scopes}&redirect_uri=${redirect}`;
@@ -26,7 +26,7 @@ app.get('/auth/slack', async (req: Request, res: Response) => {
         `);
 });
 
-app.get('/auth/slack/callback', async (req: Request, res: Response) => {
+app.get('/slack/auth/callback', async (req: Request, res: Response) => {
     try {
         const response = await client.oauth.v2.access({
             client_id: process.env.SLACK_CLIENT_ID,
@@ -43,3 +43,15 @@ app.get('/auth/slack/callback', async (req: Request, res: Response) => {
         res.status(500).send(`<html><body><p>Sorry! Something went wrong</p><p>${JSON.stringify(err)}</p>`);
     }
 });
+
+app.post('/', (req: Request, res: Response) => {
+    colorScheme(req.body.text, function (colors: iColorResponse[]) {
+        var data: iSlackResponse = {
+            response_type: 'in_channel',
+            text: colors.join(',')
+        };
+        res.json(data);
+    })
+});
+
+app.listen(3000, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });

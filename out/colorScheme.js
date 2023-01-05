@@ -40,19 +40,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var node_fetch_1 = __importDefault(require("node-fetch"));
-function colorScheme(input, callback) {
+function colorScheme(url, callback) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
-            return [2 /*return*/, (0, node_fetch_1.default)('http://www.colorfyit.com/api/swatches/list.json?url=' + input, { method: 'GET' })
+            return [2 /*return*/, (0, node_fetch_1.default)('http://www.colorfyit.com/api/swatches/list.json?url=' + url, { method: 'GET' })
                     .then(function (response) {
-                    console.log(response);
                     if (!response.ok) {
                         throw new Error(response.statusText);
                     }
                     return response.json();
                 })
                     .then(function (data) {
-                    var colors = data.colors.map(function (raw) { return raw.Hex; });
+                    var colors = data.colors.map(function (color) { return color.Hex; });
                     callback(colors);
                 })];
         });

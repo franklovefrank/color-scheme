@@ -72,23 +72,22 @@ var app = (0, express_1.default)();
 var client = new web_api_1.WebClient();
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
-app.listen(process.env.PORT, function () { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });
-app.get('/', function (req, res) {
-    res.send('Successfully setup and running Node and Express.');
+app.listen(process.env.PORT, function () { console.log('Express server listening on port %s in %s mode', process.env.PORT, app.settings.env); });
+app.get('/', function (_, res) {
+    res.send('running Node and Express');
 });
 app.post('/', function (req, res) {
     (0, colorScheme_1.default)(req.body.text, function (colors) {
-        var data = {
+        var slackResponse = {
             response_type: 'in_channel',
             text: colors.join(',')
         };
-        res.json(data);
+        res.json(slackResponse);
     });
 });
 app.get('/slack/auth', function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
     var scopes, redirect_url, url;
     return __generator(this, function (_a) {
-        console.log(process.env.SLACK_CLIENT_ID);
         scopes = 'identity.basic,identity.email';
         redirect_url = 'https://anna-claire-color-schemer.herokuapp.com/auth/slack/callback';
         url = "https://slack.com/oauth/v2/authorize?client_id=".concat(process.env.SLACK_CLIENT_ID, "&user_scope=").concat(scopes, "&redirect_uri=").concat(redirect_url);

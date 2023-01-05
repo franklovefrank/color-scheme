@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.listen(process.env.PORT, () => { console.log('Express server listening on port 3000 in %s mode', app.settings.env); });
 
-app.get('/', (req, res) => {
+app.get('/', (req, res: Response) => {
     res.send('Successfully setup and running Node and Express.');
 });
 
@@ -28,7 +28,7 @@ app.post('/', (req: Request, res: Response) => {
     })
 });
 
-app.get('/slack/auth', async (_, res) => {
+app.get('/slack/auth', async (_, res: Response) => {
     console.log(process.env.SLACK_CLIENT_ID)
     const scopes = 'identity.basic,identity.email';
     const redirect_url = 'https://anna-claire-color-schemer.herokuapp.com/auth/slack/callback';
@@ -44,7 +44,7 @@ app.get('/slack/auth', async (_, res) => {
         `);
 });
 
-app.get('/slack/auth/callback', async (req, res) => {
+app.get('/slack/auth/callback', async (req: Request, res: Response) => {
 
     try {
         const response = await client.oauth.v2.access({
